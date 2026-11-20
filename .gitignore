@@ -1,4 +1,6 @@
-**/target/
-**/.env
-**/.vscode/
-**/.idea/
+target/
+.idea/
+.vscode/
+.env
+*.log
+.DS_Store
