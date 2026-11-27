@@ -26,7 +26,7 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
-    public Optional<Order> getById(Long id) {
+    public Optional<Order> getById(String id) {
         return orderRepository.findById(id);
     }
 
@@ -44,7 +44,6 @@ public class OrderService {
         BigDecimal total = BigDecimal.ZERO;
         if (order.getItems() != null) {
             for (OrderItem item : order.getItems()) {
-                item.setOrder(order);
                 if (item.getPrice() != null && item.getQuantity() != null) {
                     BigDecimal sub = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
                     item.setSubtotal(sub);
@@ -59,24 +58,25 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public Optional<Order> updateStatus(Long id, String newStatus) {
+    public Optional<Order> updateStatus(String id, String newStatus) {
         return orderRepository.findById(id).map(order -> {
             order.setStatus(newStatus);
             return orderRepository.save(order);
         });
     }
 
-    public Optional<Order> update(Long id, Order details) {
+    public Optional<Order> update(String id, Order details) {
         return orderRepository.findById(id).map(order -> {
             if (details.getTableNumber() != null) order.setTableNumber(details.getTableNumber());
             if (details.getOrderType() != null) order.setOrderType(details.getOrderType());
             if (details.getStatus() != null) order.setStatus(details.getStatus());
             if (details.getNote() != null) order.setNote(details.getNote());
+            if (details.getItems() != null) order.setItems(details.getItems());
             return orderRepository.save(order);
         });
     }
 
-    public boolean delete(Long id) {
+    public boolean delete(String id) {
         if (orderRepository.existsById(id)) {
             orderRepository.deleteById(id);
             return true;

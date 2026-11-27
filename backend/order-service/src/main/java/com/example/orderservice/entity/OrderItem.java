@@ -1,54 +1,29 @@
 package com.example.orderservice.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
-import org.hibernate.annotations.Nationalized;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "order_items")
 public class OrderItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "product_id")
     private Long productId;
-
-    @Nationalized
-    @Column(name = "product_name", nullable = false, length = 150)
     private String productName;
-
-    @Column(length = 20)
     private String size;
-
-    @Column(nullable = false)
     private Integer quantity;
-
-    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
-
-    @Column(precision = 12, scale = 2)
     private BigDecimal subtotal;
-
-    @Nationalized
-    @Column(length = 255)
     private String note;
-
-    @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
 
     public OrderItem() {}
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public OrderItem(Long productId, String productName, String size, Integer quantity, BigDecimal price, String note) {
+        this.productId = productId;
+        this.productName = productName;
+        this.size = size;
+        this.quantity = quantity;
+        this.price = price;
+        this.note = note;
+        if (price != null && quantity != null) {
+            this.subtotal = price.multiply(BigDecimal.valueOf(quantity));
+        }
     }
 
     public Long getProductId() {
@@ -105,13 +80,5 @@ public class OrderItem {
 
     public void setNote(String note) {
         this.note = note;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
     }
 }

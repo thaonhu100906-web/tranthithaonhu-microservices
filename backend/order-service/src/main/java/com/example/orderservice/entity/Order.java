@@ -1,55 +1,34 @@
 package com.example.orderservice.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
-import org.hibernate.annotations.Nationalized;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "orders")
+@Document(collection = "orders")
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "order_code", length = 50)
+    private String id;
     private String orderCode;
-
-    @Nationalized
-    @Column(name = "table_number", length = 50)
     private String tableNumber;
-
-    @Column(name = "order_type", length = 30)
     private String orderType;
-
-    @Column(length = 30)
     private String status;
-
-    @Column(name = "total_amount", precision = 12, scale = 2)
     private BigDecimal totalAmount;
-
-    @Nationalized
-    @Column(length = 255)
     private String note;
-
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @JsonManagedReference
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {}
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -115,15 +94,12 @@ public class Order {
 
     public void setItems(List<OrderItem> items) {
         this.items = items;
-        if (items != null) {
-            for (OrderItem item : items) {
-                item.setOrder(this);
-            }
-        }
     }
 
     public void addItem(OrderItem item) {
-        items.add(item);
-        item.setOrder(this);
+        if (this.items == null) {
+            this.items = new ArrayList<>();
+        }
+        this.items.add(item);
     }
 }
