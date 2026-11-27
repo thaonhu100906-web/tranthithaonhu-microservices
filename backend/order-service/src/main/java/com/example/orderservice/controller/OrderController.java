@@ -1,8 +1,11 @@
 package com.example.orderservice.controller;
 
+import com.example.orderservice.dto.OrderRequest;
+import com.example.orderservice.dto.OrderResponse;
 import com.example.orderservice.dto.ProductResponse;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,13 @@ public class OrderController {
         return orderService.getProduct(id);
     }
 
+    @PostMapping
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(orderService.createOrder(request));
+    }
+
     @GetMapping
     public List<Order> getAll(@RequestParam(required = false) String status) {
         return orderService.getAll(status);
@@ -36,12 +46,6 @@ public class OrderController {
         return orderService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<Order> create(@RequestBody Order order) {
-        Order created = orderService.create(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PatchMapping("/{id}/status")

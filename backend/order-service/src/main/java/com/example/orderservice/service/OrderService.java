@@ -1,6 +1,9 @@
 package com.example.orderservice.service;
 
 import com.example.orderservice.client.ProductClient;
+import com.example.orderservice.dto.OrderItemRequest;
+import com.example.orderservice.dto.OrderRequest;
+import com.example.orderservice.dto.OrderResponse;
 import com.example.orderservice.dto.ProductResponse;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.OrderItem;
@@ -9,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +29,41 @@ public class OrderService {
 
     public ProductResponse getProduct(Long productId) {
         return productClient.getById(productId);
+    }
+
+    public OrderResponse createOrder(OrderRequest request) {
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        Order order = new Order();
+        order.setOrderCode("ORD-" + System.currentTimeMillis());
+        order.setStatus("PENDING");
+        order.setCreatedAt(LocalDateTime.now());
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        for (OrderItemRequest item : request.items()) {
+            // Gọi Product Service để lấy thông tin và giá sản phẩm
+            ProductResponse product = productClient.getById(item.productId());
+
+            // Tính thành tiền của từng sản phẩm
+            BigDecimal amount = product.price().multiply(BigDecimal.valueOf(item.quantity()));
+
+            // Tính tổng tiền đơn hàng
+            totalAmount = totalAmount.add(amount);
+
+            // Tạo OrderItem tương ứng
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProductId(product.id());
+            orderItem.setProductName(product.name());
+            orderItem.setQuantity(item.quantity());
+            orderItem.setPrice(product.price());
+            orderItem.setSubtotal(amount);
+            orderItems.add(orderItem);
+        }
+
+        order.setItems(orderItems);
+        order.setTotalAmount(totalAmount);
+
+        Order saved = orderRepository.save(order);
+        return new OrderResponse(saved.getId(), saved.getTotalAmount());
     }
 
     public List<Order> getAll(String status) {
